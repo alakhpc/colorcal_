@@ -1,7 +1,8 @@
-import { ActionFunction, LoaderFunction, createCookie, redirect } from "@remix-run/cloudflare";
+import { ActionFunction, LoaderFunction, redirect } from "@remix-run/cloudflare";
 import { Form } from "@remix-run/react";
 import { generateCodeVerifier, generateState } from "arctic";
 import { GOOGLE_SCOPES, google } from "~/lib/auth.server";
+import { codeVerifierCookie, stateCookie } from "~/lib/cookies.server";
 import { getUserId } from "~/lib/sessions.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -13,7 +14,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   return null;
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async () => {
   const state = generateState();
   const codeVerifier = generateCodeVerifier();
 
@@ -21,13 +22,10 @@ export const action: ActionFunction = async ({ request }) => {
   url.searchParams.set("prompt", "consent");
   url.searchParams.set("access_type", "offline");
 
-  const stateCookie = createCookie("state", {});
-  const codeVerifierCookie = createCookie("codeVerifier", {});
-
   return redirect(url.toString(), {
     headers: [
       ["Set-Cookie", await stateCookie.serialize(state)],
-      ["Set-Cookie", await codeVerifierCookie.serialize(state)],
+      ["Set-Cookie", await codeVerifierCookie.serialize(codeVerifier)],
     ],
   });
 };
