@@ -1,0 +1,23 @@
+{
+  "name": "@colorcal/db",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "migrate:generate": "drizzle-kit generate:sqlite --schema=src/schema.ts",
+    "migrate:prod:list": "wrangler --persist-to=../../.wrangler d1 migrations list DB",
+    "migrate:local:list": "pnpm migrate:prod:list --local",
+    "migrate:prod:apply": "wrangler --persist-to=../../.wrangler d1 migrations apply DB",
+    "migrate:local:apply": "pnpm migrate:prod:apply --local"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.29.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20230518.0",
+    "drizzle-kit": "^0.20.14"
+  }
+}
