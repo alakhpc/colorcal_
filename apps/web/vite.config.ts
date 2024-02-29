@@ -7,7 +7,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [
-    remixCloudflareDevProxy({ persist: { path: "../../.wrangler" } }),
+    remixCloudflareDevProxy({ persist: { path: "../../.wrangler/v3" } }),
     remix(),
     tsconfigPaths(),
   ],

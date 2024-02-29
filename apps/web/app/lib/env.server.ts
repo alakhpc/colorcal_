@@ -1,3 +1,4 @@
+import { AppLoadContext } from "@remix-run/cloudflare";
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -7,4 +8,6 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().min(1),
 });
 
-export const env = envSchema.parse(process.env);
+export function env(context: AppLoadContext) {
+  return envSchema.parse(context.cloudflare.env);
+}

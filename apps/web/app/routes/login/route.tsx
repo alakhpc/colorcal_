@@ -1,41 +1,36 @@
-import { ActionFunction, LoaderFunction, redirect } from "@remix-run/cloudflare";
+import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { Form } from "@remix-run/react";
-import { generateCodeVerifier, generateState } from "arctic";
-import { GOOGLE_SCOPES, google } from "~/lib/auth.server";
-import { codeVerifierCookie, stateCookie } from "~/lib/cookies.server";
+import { generateGoogleUrl } from "~/lib/auth.server";
 import { getUserId } from "~/lib/sessions.server";
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await getUserId(request);
-  if (userId) {
-    throw redirect("/app");
-  }
-
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const userId = await getUserId({ request, context });
+  if (userId) throw redirect("/dashboard");
   return null;
-};
+}
 
-export const action: ActionFunction = async () => {
-  const state = generateState();
-  const codeVerifier = generateCodeVerifier();
+export async function action({ request, context }: ActionFunctionArgs) {
+  if (request.method !== "POST") return new Response(null, { status: 405 });
 
-  const url = await google.createAuthorizationURL(state, codeVerifier, { scopes: GOOGLE_SCOPES });
-  url.searchParams.set("prompt", "consent");
-  url.searchParams.set("access_type", "offline");
+  const googleGen = await generateGoogleUrl({ context, callbackPath: "/callbacks/google-login" });
 
-  return redirect(url.toString(), {
+  throw redirect(googleGen.url.toString(), {
     headers: [
-      ["Set-Cookie", await stateCookie.serialize(state)],
-      ["Set-Cookie", await codeVerifierCookie.serialize(codeVerifier)],
+      ["Set-Cookie", googleGen.createdStateCookie],
+      ["Set-Cookie", googleGen.createdCodeVerifierCookie],
     ],
   });
-};
+}
 
 export default function Login() {
   return (
-    <main className="flex h-full items-center justify-center">
+    <div className="flex flex-col h-full gap-4 items-center justify-center">
+      <div className="text-xl text-blue-500">Login page</div>
       <Form method="POST">
-        <button className="px-4 py-2 bg-black text-white rounded-md">Login</button>
+        <button type="submit" className="px-4 py-2 bg-black text-white rounded-md">
+          Login
+        </button>
       </Form>
-    </main>
+    </div>
   );
 }
