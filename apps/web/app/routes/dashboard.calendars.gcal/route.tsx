@@ -1,4 +1,5 @@
 import { LoaderFunctionArgs, json, redirect } from "@remix-run/cloudflare";
+import { useLoaderData } from "@remix-run/react";
 import { Gcal } from "~/gcal";
 import { getDb, getGcalAccount } from "~/lib/db.server";
 import { requireUserId } from "~/lib/sessions.server";
@@ -13,9 +14,22 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const gcal = new Gcal({ context, db, ...gcalAccount });
   const calendars = await gcal.calendarList();
 
-  return json({ calendars });
+  const slimCalendars = calendars.items.map((calendar) => ({
+    id: calendar.id,
+    summary: calendar.summary,
+  }));
+
+  return json({ calendars: slimCalendars });
 }
 
 export default function DashboardConnected() {
-  return <div>hi</div>;
+  const { calendars } = useLoaderData<typeof loader>();
+
+  return (
+    <div>
+      {calendars.map((calendar) => {
+        return <div key={calendar.id}>{calendar.summary}</div>;
+      })}
+    </div>
+  );
 }
