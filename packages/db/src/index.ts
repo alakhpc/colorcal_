@@ -7,3 +7,6 @@ export async function makeDrizzle(d1: D1Database) {
   await db.run(sql`PRAGMA foreign_keys = ON;`);
   return db;
 }
+
+export * from "drizzle-orm";
+export type Database = Awaited<ReturnType<typeof makeDrizzle>>;
