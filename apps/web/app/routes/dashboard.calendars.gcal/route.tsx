@@ -1,9 +1,9 @@
-import { eq } from "@colorcal/db";
-import { watchedGcals } from "@colorcal/db/schema";
+import { eq } from "@colorcal/db/drizzle";
+import { watchedGcalsTable } from "@colorcal/db/tables";
 import { LoaderFunctionArgs, json, redirect } from "@remix-run/cloudflare";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import { Gcal } from "~/gcal";
 import { getDb, getGcalAccount } from "~/lib/db.server";
+import { getGcalApi } from "~/lib/gcal.server";
 import { requireUserId } from "~/lib/sessions.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -13,13 +13,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const gcalAccount = await getGcalAccount(userId, db);
   if (!gcalAccount) throw redirect("/dashboard");
 
-  const gcal = new Gcal({ request, context, db, ...gcalAccount });
+  const gcalApi = getGcalApi({ db, context, ...gcalAccount });
 
-  const calendars = await gcal.calendarList();
+  const calendars = await gcalApi.calendarList();
 
-  const watchedCalendars = await db.query.watchedGcals.findMany({
+  const watchedCalendars = await db.query.watchedGcalsTable.findMany({
     columns: { id: true },
-    where: eq(watchedGcals.googleCalendarAccountSub, gcalAccount.sub),
+    where: eq(watchedGcalsTable.googleCalendarAccountSub, gcalAccount.sub),
   });
 
   const watchedCalendarIds = watchedCalendars.map((cal) => cal.id);

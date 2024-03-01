@@ -1,39 +1,42 @@
-import { Database, eq } from "@colorcal/db";
-import { gcalAccounts } from "@colorcal/db/schema";
-import { AppLoadContext } from "@remix-run/cloudflare";
-import { refreshAccessToken } from "../lib/auth.server";
-import { CalendarListParams, PostParams } from "./params";
-import { calendarListSchema } from "./schemas";
+import { refreshAccessToken } from "@colorcal/auth/google";
+import { Database } from "@colorcal/db";
+import { eq } from "@colorcal/db/drizzle";
+import { gcalAccountsTable } from "@colorcal/db/tables";
+import { CalendarListParams, EventListParams, PostParams } from "./params";
+import { GcalEvent, calendarListSchema, eventListSchema } from "./schema";
+
+export * from "./params";
+export * from "./schema";
 
 interface GCalOptions {
-  request: Request;
-  context: AppLoadContext;
-
   db: Database;
+  clientId: string;
+  clientSecret: string;
   accessToken: string;
   refreshToken: string;
   accessTokenExpiresAt: Date;
 }
 
-export class Gcal {
+export class GoogleCalendarAPI {
   private BASE_URL = "https://www.googleapis.com/calendar/v3";
 
   private REFRESH_THRESHOLD = 5 * 60 * 1000;
 
-  private request: Request;
-  private context: AppLoadContext;
-
   private db: Database;
+
+  private clientId: string;
+  private clientSecret: string;
 
   private accessToken: string;
   private refreshToken: string;
   private accessTokenExpiresAt: Date;
 
   constructor(opts: GCalOptions) {
-    this.request = opts.request;
-    this.context = opts.context;
-
     this.db = opts.db;
+
+    this.clientId = opts.clientId;
+    this.clientSecret = opts.clientSecret;
+
     this.accessToken = opts.accessToken;
     this.refreshToken = opts.refreshToken;
     this.accessTokenExpiresAt = opts.accessTokenExpiresAt;
@@ -46,12 +49,20 @@ export class Gcal {
     return calendarListSchema.parse(json);
   }
 
-  private async get(path: string, _params: Record<string, string | number | boolean>) {
+  public async eventsList(_params: EventListParams) {
+    const { calendarId, ...params } = _params;
+    const path = `/calendars/${calendarId}/events`;
+    const response = await this.get(path, params);
+    const json = await response.json();
+    return eventListSchema.parse(json);
+  }
+
+  private async get(path: string, _params: Record<string, string | number | boolean | undefined>) {
     await this.fixTokens();
 
     const params = Object.entries(_params).reduce(
       (acc, [key, value]) => {
-        acc[key] = String(value);
+        if (value !== undefined) acc[key] = String(value);
         return acc;
       },
       {} as Record<string, string>,
@@ -63,6 +74,10 @@ export class Gcal {
         Authorization: `Bearer ${this.accessToken}`,
       },
     });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+    }
 
     return response;
   }
@@ -95,16 +110,15 @@ export class Gcal {
     const exp = this.accessTokenExpiresAt.getTime() - this.REFRESH_THRESHOLD;
 
     if (Date.now() > exp) {
-      const request = this.request;
-      const context = this.context;
       const refreshToken = this.refreshToken;
-
-      const tokens = await refreshAccessToken({ request, context, refreshToken });
+      const clientId = this.clientId;
+      const clientSecret = this.clientSecret;
+      const tokens = await refreshAccessToken({ clientId, clientSecret, refreshToken });
 
       await this.db
-        .update(gcalAccounts)
+        .update(gcalAccountsTable)
         .set({ accessTokenExpiresAt: tokens.accessTokenExpiresAt, accessToken: tokens.accessToken })
-        .where(eq(gcalAccounts.accessToken, this.accessToken));
+        .where(eq(gcalAccountsTable.accessToken, this.accessToken));
 
       this.accessToken = tokens.accessToken;
       this.accessTokenExpiresAt = tokens.accessTokenExpiresAt;

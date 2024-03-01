@@ -46,6 +46,7 @@ export const calendarSchema = z.object({
     allowedConferenceSolutionTypes: z.array(z.string()),
   }),
 });
+export type GcalCalendar = z.infer<typeof calendarSchema>;
 
 export const calendarListSchema = z.object({
   kind: z.literal("calendar#calendarList"),
@@ -54,3 +55,32 @@ export const calendarListSchema = z.object({
   nextSyncToken: z.string().optional(),
   items: z.array(calendarSchema),
 });
+export type GcalCalendarList = z.infer<typeof calendarListSchema>;
+
+const eventSchema = z.object({
+  id: z.string(),
+  summary: z.string().optional(),
+  description: z.string().optional(),
+  location: z.string().optional(),
+});
+export type GcalEvent = z.infer<typeof eventSchema>;
+
+export const eventListSchema = z.object({
+  kind: z.literal("calendar#events"),
+  etag: z.string(),
+  summary: z.string(),
+  description: z.string(),
+  updated: z.string(),
+  timeZone: z.string(),
+  accessRole: minAccessRoleSchema,
+  defaultReminders: z.array(
+    z.object({
+      method: z.enum(["email", "popup"]),
+      minutes: z.number(),
+    }),
+  ),
+  nextPageToken: z.string().optional(),
+  nextSyncToken: z.string().optional(),
+  items: z.array(eventSchema),
+});
+export type GcalEventList = z.infer<typeof eventListSchema>;

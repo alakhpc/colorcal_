@@ -1,5 +1,5 @@
-import { and, eq } from "@colorcal/db";
-import { oauthAccounts, users } from "@colorcal/db/schema";
+import { and, eq } from "@colorcal/db/drizzle";
+import { oauthAccountsTable, usersTable } from "@colorcal/db/tables";
 import { LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { nanoid } from "nanoid";
 import { handleGoogleCallback } from "~/lib/auth.server";
@@ -13,11 +13,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   const db = await getDb(context);
 
-  const existingAccount = await db.query.oauthAccounts.findFirst({
+  const existingAccount = await db.query.oauthAccountsTable.findFirst({
     columns: { userId: true },
     where: and(
-      eq(oauthAccounts.providerId, "google"),
-      eq(oauthAccounts.providerUserId, tokens.idToken.sub),
+      eq(oauthAccountsTable.providerId, "google"),
+      eq(oauthAccountsTable.providerUserId, tokens.idToken.sub),
     ),
   });
 
@@ -34,9 +34,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const userId = nanoid();
 
   await db.batch([
-    db.insert(users).values({ id: userId }),
+    db.insert(usersTable).values({ id: userId }),
     db
-      .insert(oauthAccounts)
+      .insert(oauthAccountsTable)
       .values({ userId, providerId: "google", providerUserId: tokens.idToken.sub }),
   ]);
 

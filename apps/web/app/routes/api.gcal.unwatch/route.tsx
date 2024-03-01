@@ -1,5 +1,5 @@
-import { eq } from "@colorcal/db";
-import { watchedGcals } from "@colorcal/db/schema";
+import { eq } from "@colorcal/db/drizzle";
+import { watchedGcalsTable } from "@colorcal/db/tables";
 import { ActionFunctionArgs } from "@remix-run/cloudflare";
 import invariant from "tiny-invariant";
 import { z } from "zod";
@@ -11,6 +11,9 @@ const unwatchGcalSchema = z.object({ id: z.string() });
 export async function action({ request, context }: ActionFunctionArgs) {
   if (request.method !== "POST") return new Response(null, { status: 405 });
 
+  const formData = Object.fromEntries(await request.formData());
+  const body = unwatchGcalSchema.parse(formData);
+
   const userId = await requireUserId({ request, context });
 
   const db = await getDb(context);
@@ -18,10 +21,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
   invariant(gcalAccount, "User must have a Google Calendar account to unwatch a calendar");
 
-  const formData = Object.fromEntries(await request.formData());
-  const body = unwatchGcalSchema.parse(formData);
-
-  await db.delete(watchedGcals).where(eq(watchedGcals.id, body.id)).execute();
+  await db.delete(watchedGcalsTable).where(eq(watchedGcalsTable.id, body.id)).execute();
 
   return null;
 }

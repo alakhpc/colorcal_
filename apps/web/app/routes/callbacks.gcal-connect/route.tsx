@@ -1,4 +1,4 @@
-import { gcalAccounts } from "@colorcal/db/schema";
+import { gcalAccountsTable } from "@colorcal/db/tables";
 import { LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import invariant from "tiny-invariant";
 import { handleGoogleCallback } from "~/lib/auth.server";
@@ -16,7 +16,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const db = await getDb(context);
 
   await db
-    .insert(gcalAccounts)
+    .insert(gcalAccountsTable)
     .values({
       userId,
       sub: tokens.idToken.sub,
@@ -25,7 +25,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       accessTokenExpiresAt: tokens.accessTokenExpiresAt,
     })
     .onConflictDoUpdate({
-      target: gcalAccounts.sub,
+      target: gcalAccountsTable.sub,
       set: {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,

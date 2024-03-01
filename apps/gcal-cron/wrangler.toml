@@ -1,0 +1,8 @@
+name = "gcal-cron"
+main = "src/index.ts"
+compatibility_date = "2024-02-23"
+
+[[d1_databases]]
+binding = "D1"
+database_name = "colorcal"
+database_id = "56d1f04a-81a8-4b82-a99c-2c384908c20a"

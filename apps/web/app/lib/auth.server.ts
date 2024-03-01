@@ -1,82 +1,9 @@
+import { validateGoogleAuthCode } from "@colorcal/auth/google";
 import { AppLoadContext } from "@remix-run/cloudflare";
-import { Google, generateCodeVerifier, generateState } from "arctic";
-import { jwtDecode } from "jwt-decode";
 import invariant from "tiny-invariant";
-import { z } from "zod";
 import { codeVerifierCookie, stateCookie } from "./cookies.server";
 import { env } from "./env.server";
-
-const googleJwtSchema = z.object({
-  iss: z.string(),
-  sub: z.string(),
-  azp: z.string(),
-  aud: z.string(),
-  iat: z.number(),
-  exp: z.number(),
-});
-
-interface GoogleOptions {
-  request: Request;
-  context: AppLoadContext;
-  callbackPath: string;
-}
-
-const googleAuth = ({ request, context, callbackPath }: GoogleOptions) => {
-  const base = new URL(request.url).origin;
-  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = env(context);
-  return new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, `${base}${callbackPath}`);
-};
-
-interface GenerateGoogleUrlOptions {
-  request: Request;
-  context: AppLoadContext;
-
-  callbackPath: string;
-  scopes?: string[];
-}
-
-export async function generateGoogleUrl(args: GenerateGoogleUrlOptions) {
-  const { request, context, callbackPath, scopes } = args;
-
-  const state = generateState();
-  const codeVerifier = generateCodeVerifier();
-
-  const google = googleAuth({ request, context, callbackPath });
-  const url = await google.createAuthorizationURL(state, codeVerifier, { scopes });
-
-  const createdStateCookie = await stateCookie.serialize(state);
-  const createdCodeVerifierCookie = await codeVerifierCookie.serialize(codeVerifier);
-
-  return { url, createdStateCookie, createdCodeVerifierCookie };
-}
-
-interface ValidateGoogleAuthCodeOptions {
-  request: Request;
-  context: AppLoadContext;
-
-  code: string;
-  storedCodeVerifier: string;
-  callbackPath: string;
-}
-
-export async function validateGoogleAuthCode(args: ValidateGoogleAuthCodeOptions) {
-  const { request, context, code, storedCodeVerifier, callbackPath } = args;
-  const google = googleAuth({ request, context, callbackPath });
-  return await google.validateAuthorizationCode(code, storedCodeVerifier);
-}
-
-interface RefreshAccessTokenOptions {
-  request: Request;
-  context: AppLoadContext;
-
-  refreshToken: string;
-}
-
-export async function refreshAccessToken(args: RefreshAccessTokenOptions) {
-  const { request, context, refreshToken } = args;
-  const google = googleAuth({ request, context, callbackPath: "" });
-  return await google.refreshAccessToken(refreshToken);
-}
+import { createAbsoluteUrl } from "./url.sever";
 
 interface HandleGoogleCallbackOptions {
   request: Request;
@@ -100,18 +27,13 @@ export async function handleGoogleCallback(args: HandleGoogleCallbackOptions) {
   invariant(storedCodeVerifier, "No code verifier");
   invariant(state === storedState, "Invalid state");
 
-  const tokens = await validateGoogleAuthCode({
-    request,
-    context,
+  const redirectUri = createAbsoluteUrl({ request, path: callbackPath });
+  const { GOOGLE_CLIENT_ID: clientId, GOOGLE_CLIENT_SECRET: clientSecret } = env(context);
+  return await validateGoogleAuthCode({
+    clientId,
+    clientSecret,
+    redirectUri,
     code,
     storedCodeVerifier,
-    callbackPath,
   });
-
-  const jwt = googleJwtSchema.parse(jwtDecode(tokens.idToken));
-
-  return {
-    ...tokens,
-    idToken: jwt,
-  };
 }

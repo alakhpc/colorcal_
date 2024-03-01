@@ -1,0 +1,21 @@
+{
+  "name": "gcal-cron",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler --persist-to=../../.wrangler dev --test-scheduled",
+    "test": "curl 'http://localhost:8787/__scheduled'",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@colorcal/db": "workspace:^",
+    "@colorcal/gcal": "workspace:^"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240222.0",
+    "typescript": "^5.0.4",
+    "wrangler": "^3.0.0"
+  }
+}

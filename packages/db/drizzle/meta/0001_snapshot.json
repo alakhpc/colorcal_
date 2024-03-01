@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "f34aa0df-328e-47a6-8100-c15b3a402b34",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "aa295fea-24b8-4687-b95c-108ebcc6b4ab",
+  "prevId": "f34aa0df-328e-47a6-8100-c15b3a402b34",
   "tables": {
     "google_calendar_accounts": {
       "name": "google_calendar_accounts",
@@ -155,8 +155,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "next_sync_token": {
-          "name": "next_sync_token",
+        "sync_token": {
+          "name": "sync_token",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -194,6 +194,8 @@
   "_meta": {
     "schemas": {},
     "tables": {},
-    "columns": {}
+    "columns": {
+      "\"watched_gcals\".\"next_sync_token\"": "\"watched_gcals\".\"sync_token\""
+    }
   }
 }

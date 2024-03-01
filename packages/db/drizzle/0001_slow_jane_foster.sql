@@ -1,0 +1,1 @@
+ALTER TABLE `watched_gcals` RENAME COLUMN `next_sync_token` TO `sync_token`;

@@ -4,9 +4,11 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema.ts"
+    "./drizzle": "./src/drizzle.ts",
+    "./tables": "./src/tables/index.ts"
   },
   "scripts": {
+    "typecheck": "tsc",
     "migrate:generate": "drizzle-kit generate:sqlite --schema=src/schema.ts",
     "migrate:prod:list": "wrangler --persist-to=../../.wrangler d1 migrations list DB",
     "migrate:local:list": "pnpm migrate:prod:list --local",
@@ -19,6 +21,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230518.0",
     "drizzle-kit": "^0.20.14",
+    "typescript": "^5.3.3",
     "wrangler": "^3.30.0"
   }
 }
