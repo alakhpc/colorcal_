@@ -16,28 +16,32 @@ const googleJwtSchema = z.object({
 });
 
 interface GoogleOptions {
+  request: Request;
   context: AppLoadContext;
   callbackPath: string;
 }
 
-const googleAuth = ({ context, callbackPath }: GoogleOptions) => {
-  const { APP_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = env(context);
-  return new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, `${APP_URL}${callbackPath}`);
+const googleAuth = ({ request, context, callbackPath }: GoogleOptions) => {
+  const base = new URL(request.url).origin;
+  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = env(context);
+  return new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, `${base}${callbackPath}`);
 };
 
 interface GenerateGoogleUrlOptions {
+  request: Request;
   context: AppLoadContext;
+
   callbackPath: string;
   scopes?: string[];
 }
 
 export async function generateGoogleUrl(args: GenerateGoogleUrlOptions) {
-  const { context, callbackPath, scopes } = args;
+  const { request, context, callbackPath, scopes } = args;
 
   const state = generateState();
   const codeVerifier = generateCodeVerifier();
 
-  const google = googleAuth({ context, callbackPath });
+  const google = googleAuth({ request, context, callbackPath });
   const url = await google.createAuthorizationURL(state, codeVerifier, { scopes });
 
   const createdStateCookie = await stateCookie.serialize(state);
@@ -47,25 +51,30 @@ export async function generateGoogleUrl(args: GenerateGoogleUrlOptions) {
 }
 
 interface ValidateGoogleAuthCodeOptions {
+  request: Request;
   context: AppLoadContext;
+
   code: string;
   storedCodeVerifier: string;
   callbackPath: string;
 }
 
 export async function validateGoogleAuthCode(args: ValidateGoogleAuthCodeOptions) {
-  const { context, code, storedCodeVerifier, callbackPath } = args;
-  const google = googleAuth({ context, callbackPath });
+  const { request, context, code, storedCodeVerifier, callbackPath } = args;
+  const google = googleAuth({ request, context, callbackPath });
   return await google.validateAuthorizationCode(code, storedCodeVerifier);
 }
 
 interface RefreshAccessTokenOptions {
+  request: Request;
   context: AppLoadContext;
+
   refreshToken: string;
 }
 
-export async function refreshAccessToken({ context, refreshToken }: RefreshAccessTokenOptions) {
-  const google = googleAuth({ context, callbackPath: "" });
+export async function refreshAccessToken(args: RefreshAccessTokenOptions) {
+  const { request, context, refreshToken } = args;
+  const google = googleAuth({ request, context, callbackPath: "" });
   return await google.refreshAccessToken(refreshToken);
 }
 
@@ -92,6 +101,7 @@ export async function handleGoogleCallback(args: HandleGoogleCallbackOptions) {
   invariant(state === storedState, "Invalid state");
 
   const tokens = await validateGoogleAuthCode({
+    request,
     context,
     code,
     storedCodeVerifier,

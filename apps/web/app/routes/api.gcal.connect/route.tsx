@@ -16,6 +16,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   if (gcalAccount) throw redirect("/dashboard");
 
   const googleGen = await generateGoogleUrl({
+    request,
     context,
     scopes: SCOPES,
     callbackPath: "/callbacks/gcal-connect",

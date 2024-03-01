@@ -12,7 +12,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 export async function action({ request, context }: ActionFunctionArgs) {
   if (request.method !== "POST") return new Response(null, { status: 405 });
 
-  const googleGen = await generateGoogleUrl({ context, callbackPath: "/callbacks/google-login" });
+  const googleGen = await generateGoogleUrl({
+    request,
+    context,
+    callbackPath: "/callbacks/google-login",
+  });
 
   throw redirect(googleGen.url.toString(), {
     headers: [
