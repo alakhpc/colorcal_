@@ -28,7 +28,11 @@ export default function DashboardConnected() {
   return (
     <div>
       {calendars.map((calendar) => {
-        return <div key={calendar.id}>{calendar.summary}</div>;
+        return (
+          <div key={calendar.id}>
+            {calendar.summary} <input type="checkbox" />
+          </div>
+        );
       })}
     </div>
   );
