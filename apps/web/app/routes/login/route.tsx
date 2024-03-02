@@ -1,7 +1,7 @@
 import { generateGoogleUrl } from "@colorcal/auth/google";
 import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { Form } from "@remix-run/react";
-import { stateCookie } from "~/lib/cookies.server";
+import { codeVerifierCookie, stateCookie } from "~/lib/cookies.server";
 import { env } from "~/lib/env.server";
 import { getUserId } from "~/lib/sessions.server";
 import { createAbsoluteUrl } from "~/lib/url.sever";
@@ -22,7 +22,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   throw redirect(url.toString(), {
     headers: [
       ["Set-Cookie", await stateCookie.serialize(cookies.state)],
-      ["Set-Cookie", await stateCookie.serialize(cookies.codeVerifier)],
+      ["Set-Cookie", await codeVerifierCookie.serialize(cookies.codeVerifier)],
     ],
   });
 }

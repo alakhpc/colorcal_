@@ -38,7 +38,7 @@ export default function Dashboard() {
       </div>
       {gcalConnected && (
         <div>
-          <Link to="./calendars/gcal" className="bg-black text-white rounded-md px-4 py-2">
+          <Link to="/dashboard/calendars/gcal" className="bg-black text-white rounded-md px-4 py-2">
             View gcal calendars
           </Link>
         </div>

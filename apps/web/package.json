@@ -16,6 +16,7 @@
     "@colorcal/auth": "workspace:^",
     "@colorcal/db": "workspace:^",
     "@colorcal/gcal": "workspace:^",
+    "@conform-to/zod": "^1.0.2",
     "@remix-run/cloudflare": "^2.8.0",
     "@remix-run/cloudflare-pages": "^2.8.0",
     "@remix-run/react": "^2.8.0",
