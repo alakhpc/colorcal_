@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@colorcal/db": "workspace:^",
-    "@colorcal/gcal": "workspace:^"
+    "@colorcal/gcal": "workspace:^",
+    "@google/generative-ai": "^0.2.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240222.0",

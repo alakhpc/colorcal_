@@ -37,3 +37,9 @@ export type EventListParams = {
   timeZone?: string;
   updatedMin?: string;
 };
+
+export interface MoveEventArgs {
+  eventId: string;
+  calendarId: string;
+  destination: string;
+}

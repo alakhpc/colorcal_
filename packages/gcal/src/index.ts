@@ -2,8 +2,8 @@ import { refreshAccessToken } from "@colorcal/auth/google";
 import { Database } from "@colorcal/db";
 import { eq } from "@colorcal/db/drizzle";
 import { gcalAccountsTable } from "@colorcal/db/tables";
-import { CalendarListParams, EventListParams, PostParams } from "./params";
-import { GcalEvent, calendarListSchema, eventListSchema } from "./schema";
+import { CalendarListParams, EventListParams, MoveEventArgs, PostParams } from "./params";
+import { calendarListSchema, eventListSchema } from "./schema";
 
 export * from "./params";
 export * from "./schema";
@@ -54,7 +54,19 @@ export class GoogleCalendarAPI {
     const path = `/calendars/${calendarId}/events`;
     const response = await this.get(path, params);
     const json = await response.json();
-    return eventListSchema.parse(json);
+    const parsed = eventListSchema.safeParse(json);
+    if (!parsed.success) {
+      console.error(parsed.error);
+      throw new Error("Failed to parse eventsList response");
+    }
+    return parsed.data;
+  }
+
+  public async moveEvent({ eventId, calendarId, ...params }: MoveEventArgs) {
+    const path = `/calendars/${calendarId}/events/${eventId}/move`;
+    const response = await this.post({ path, body: params });
+    await response.body?.cancel("Not needed");
+    return;
   }
 
   private async get(path: string, _params: Record<string, string | number | boolean | undefined>) {
@@ -76,7 +88,8 @@ export class GoogleCalendarAPI {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+      const text = await response.text();
+      throw new Error(`Failed to fetch ${url}: ${response.statusText} - ${text}`);
     }
 
     return response;
@@ -102,6 +115,11 @@ export class GoogleCalendarAPI {
       },
       body: JSON.stringify(body),
     });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Failed to fetch ${url}: ${response.statusText} - ${text}`);
+    }
 
     return response;
   }

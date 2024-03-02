@@ -62,6 +62,8 @@ const eventSchema = z.object({
   summary: z.string().optional(),
   description: z.string().optional(),
   location: z.string().optional(),
+  status: z.enum(["confirmed", "tentative", "cancelled"]),
+  eventType: z.enum(["default", "outOfOffice", "focusTime", "workingLocation"]).optional(),
 });
 export type GcalEvent = z.infer<typeof eventSchema>;
 

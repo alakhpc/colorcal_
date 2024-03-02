@@ -9,17 +9,19 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "migrate:generate": "drizzle-kit generate:sqlite --schema=src/schema.ts",
-    "migrate:prod:list": "wrangler --persist-to=../../.wrangler d1 migrations list DB",
-    "migrate:local:list": "pnpm migrate:prod:list --local",
-    "migrate:prod:apply": "wrangler --persist-to=../../.wrangler d1 migrations apply DB",
-    "migrate:local:apply": "pnpm migrate:prod:apply --local"
+    "dev": "drizzle-kit studio",
+    "migrate:generate": "drizzle-kit generate:sqlite",
+    "migrate:prod:list": "wrangler d1 migrations list DB",
+    "migrate:local:list": "wrangler d1 --local --persist-to=../../.wrangler migrations list DB",
+    "migrate:prod:apply": "wrangler d1 migrations apply DB",
+    "migrate:local:apply": "wrangler d1 --local --persist-to=../../.wrangler migrations apply DB"
   },
   "dependencies": {
     "drizzle-orm": "^0.29.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240222.0",
+    "better-sqlite3": "^9.4.3",
     "drizzle-kit": "^0.20.14",
     "typescript": "^5.3.3",
     "wrangler": "^3.30.1"

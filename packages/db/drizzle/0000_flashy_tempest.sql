@@ -21,7 +21,7 @@ CREATE TABLE `users` (
 --> statement-breakpoint
 CREATE TABLE `watched_gcals` (
 	`id` text PRIMARY KEY NOT NULL,
-	`next_sync_token` text,
+	`sync_token` text NOT NULL,
 	`google_account_id` text NOT NULL,
 	FOREIGN KEY (`google_account_id`) REFERENCES `google_calendar_accounts`(`sub`) ON UPDATE no action ON DELETE cascade
 );

@@ -1,6 +1,6 @@
 import { generateGoogleUrl } from "@colorcal/auth/google";
 import { ActionFunctionArgs, redirect } from "@remix-run/cloudflare";
-import { stateCookie } from "~/lib/cookies.server";
+import { codeVerifierCookie, stateCookie } from "~/lib/cookies.server";
 import { getDb, getGcalAccount } from "~/lib/db.server";
 import { env } from "~/lib/env.server";
 import { requireUserId } from "~/lib/sessions.server";
@@ -33,7 +33,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   throw redirect(url.toString(), {
     headers: [
       ["Set-Cookie", await stateCookie.serialize(cookies.state)],
-      ["Set-Cookie", await stateCookie.serialize(cookies.codeVerifier)],
+      ["Set-Cookie", await codeVerifierCookie.serialize(cookies.codeVerifier)],
     ],
   });
 }
