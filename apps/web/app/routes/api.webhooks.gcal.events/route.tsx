@@ -119,8 +119,12 @@ async function doAIStuff(args: DoAIStuffArgs) {
 
   const prompt = `Classify this task ${JSON.stringify(event.summary)} into these buckets: ${buckets}. Respond only with the bucket name.`;
 
+  console.log("Prompting AI with:", prompt);
+
   const result = await model.generateContent(prompt);
   const maybeBucket = result.response.text();
+
+  console.log("AI responded with:", maybeBucket);
 
   return calendars.find((c) => c.summary === maybeBucket)?.id;
 }
