@@ -2,13 +2,15 @@ import { LinksFunction } from "@remix-run/cloudflare";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
 import styles from "./tailwind.css?url";
 
+import "cal-sans";
+
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: styles }];
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="dark h-full antialiased">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

@@ -2,7 +2,16 @@ import { refreshAccessToken } from "@colorcal/auth/google";
 import { Database } from "@colorcal/db";
 import { eq } from "@colorcal/db/drizzle";
 import { gcalAccountsTable } from "@colorcal/db/tables";
-import { CalendarListParams, EventListParams, MoveEventArgs, PostParams } from "./params";
+import {
+  EventListParams,
+  MoveEventArgs,
+  PostParams,
+  StopChannelArgs,
+  WatchCalendarListParams,
+  WatchCalendarListResponse,
+  WatchEventsArgs,
+  WatchEventsResponse,
+} from "./params";
 import { calendarListSchema, eventListSchema } from "./schema";
 
 export * from "./params";
@@ -42,14 +51,38 @@ export class GoogleCalendarAPI {
     this.accessTokenExpiresAt = opts.accessTokenExpiresAt;
   }
 
-  public async calendarList(params: CalendarListParams = {}) {
+  public async listCalendarList() {
     const PATH = "/users/me/calendarList";
+    const params = {
+      maxResults: undefined,
+      minAccessRole: undefined,
+      pageToken: undefined,
+      showDeleted: undefined,
+      showHidden: undefined,
+      syncToken: undefined,
+    };
+
     const response = await this.get(PATH, params);
     const json = await response.json();
     return calendarListSchema.parse(json);
   }
 
-  public async eventsList(_params: EventListParams) {
+  public async watchCalendarList(args: WatchCalendarListParams) {
+    const { id, address } = args;
+    const path = "/users/me/calendarList/watch";
+    const body = {
+      id,
+      address,
+      type: "web_hook",
+      token: undefined,
+      params: undefined,
+    };
+
+    const response = await this.post({ path, body });
+    return (await response.json()) as WatchCalendarListResponse;
+  }
+
+  public async listEvents(_params: EventListParams) {
     const { calendarId, ...params } = _params;
     const path = `/calendars/${calendarId}/events`;
     const response = await this.get(path, params);
@@ -65,6 +98,30 @@ export class GoogleCalendarAPI {
   public async moveEvent({ eventId, calendarId, ...params }: MoveEventArgs) {
     const path = `/calendars/${calendarId}/events/${eventId}/move`;
     const response = await this.post({ path, body: params });
+    await response.body?.cancel("Not needed");
+    return;
+  }
+
+  public async watchEvents(args: WatchEventsArgs) {
+    const { id, address, calendarId, eventTypes } = args;
+    const path = `/calendars/${calendarId}/events/watch`;
+    const params = { eventTypes };
+    const body = {
+      id,
+      address,
+      type: "web_hook",
+      token: undefined,
+      params: undefined,
+    };
+
+    const response = await this.post({ path, params, body });
+    return (await response.json()) as WatchEventsResponse;
+  }
+
+  public async stopChannel({ id, resourceId }: StopChannelArgs) {
+    const path = "/channels/stop";
+    const body = { id, resourceId };
+    const response = await this.post({ path, body });
     await response.body?.cancel("Not needed");
     return;
   }
@@ -95,12 +152,12 @@ export class GoogleCalendarAPI {
     return response;
   }
 
-  private async post({ path, params: _params, body }: PostParams) {
+  private async post({ path, params: _params = {}, body }: PostParams) {
     await this.fixTokens();
 
-    const params = Object.entries(_params ?? {}).reduce(
+    const params = Object.entries(_params).reduce(
       (acc, [key, value]) => {
-        acc[key] = String(value);
+        if (value !== undefined) acc[key] = String(value);
         return acc;
       },
       {} as Record<string, string>,

@@ -17,7 +17,8 @@
     "migrate:local:apply": "wrangler d1 --local --persist-to=../../.wrangler migrations apply DB"
   },
   "dependencies": {
-    "drizzle-orm": "^0.29.4"
+    "drizzle-orm": "^0.29.4",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240222.0",

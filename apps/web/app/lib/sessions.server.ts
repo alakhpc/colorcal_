@@ -1,8 +1,7 @@
 import { AppLoadContext, createCookieSessionStorage, redirect } from "@remix-run/cloudflare";
-import { env } from "./env.server";
 
 export function getSessionStorage(context: AppLoadContext) {
-  const { SESSION_SECRET } = env(context);
+  const { SESSION_SECRET } = context.cloudflare.env;
 
   return createCookieSessionStorage({
     cookie: {

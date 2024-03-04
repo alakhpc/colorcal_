@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const minAccessRoleSchema = z.enum(["freeBusyReader", "reader", "writer", "owner"]);
 export type MinAccessRole = z.infer<typeof minAccessRoleSchema>;
+export const eventTypeSchema = z.enum(["default", "focusTime", "outOfOffice", "workingLocation"]);
+export type EventType = z.infer<typeof eventTypeSchema>;
 
 export const calendarSchema = z.object({
   kind: z.literal("calendar#calendarListEntry"),
@@ -16,7 +18,7 @@ export const calendarSchema = z.object({
   backgroundColor: z.string().optional(),
   foregroundColor: z.string().optional(),
   hidden: z.boolean().optional(),
-  selected: z.boolean(),
+  selected: z.boolean().optional(),
   accessRole: minAccessRoleSchema,
   defaultReminders: z.array(
     z.object({
@@ -63,7 +65,7 @@ const eventSchema = z.object({
   description: z.string().optional(),
   location: z.string().optional(),
   status: z.enum(["confirmed", "tentative", "cancelled"]),
-  eventType: z.enum(["default", "outOfOffice", "focusTime", "workingLocation"]).optional(),
+  eventType: eventTypeSchema.optional(),
 });
 export type GcalEvent = z.infer<typeof eventSchema>;
 

@@ -2,9 +2,9 @@ import { generateGoogleUrl } from "@colorcal/auth/google";
 import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { Form } from "@remix-run/react";
 import { codeVerifierCookie, stateCookie } from "~/lib/cookies.server";
-import { env } from "~/lib/env.server";
 import { getUserId } from "~/lib/sessions.server";
-import { createAbsoluteUrl } from "~/lib/url.sever";
+import { createAbsoluteUrl } from "~/lib/url.server";
+import { GOOGLE_LOGIN_CALLBACK_PATH } from "../api.callbacks.google-login/route";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const userId = await getUserId({ request, context });
@@ -15,9 +15,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 export async function action({ request, context }: ActionFunctionArgs) {
   if (request.method !== "POST") return new Response(null, { status: 405 });
 
-  const redirectUri = createAbsoluteUrl({ request, path: "/callbacks/google-login" });
-  const { GOOGLE_CLIENT_ID: clientId, GOOGLE_CLIENT_SECRET: clientSecret } = env(context);
-  const { url, ...cookies } = await generateGoogleUrl({ clientId, clientSecret, redirectUri });
+  const redirectUri = createAbsoluteUrl({ request, path: GOOGLE_LOGIN_CALLBACK_PATH });
+  const { url, ...cookies } = await generateGoogleUrl({
+    clientId: context.cloudflare.env.GOOGLE_CLIENT_ID,
+    clientSecret: context.cloudflare.env.GOOGLE_CLIENT_SECRET,
+    redirectUri,
+  });
 
   throw redirect(url.toString(), {
     headers: [

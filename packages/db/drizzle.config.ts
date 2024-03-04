@@ -5,6 +5,6 @@ export default {
   out: "./drizzle",
   driver: "better-sqlite",
   dbCredentials: {
-    url: "../../.wrangler/v3/d1/miniflare-D1DatabaseObject/c15aec3e0c24f3884222853037b835aaee381627006c7d665ed1aeb2ab255fcf.sqlite",
+    url: "../../.wrangler/v3/d1/miniflare-D1DatabaseObject/eda924b5668aadcaf99cdb3f8357ed6ea6766683ccb511b5bc07fe0cbd7ed0f9.sqlite",
   },
 } satisfies Config;

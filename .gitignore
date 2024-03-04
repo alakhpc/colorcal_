@@ -24,6 +24,7 @@ coverage
 .vercel
 
 # Build Outputs
+*.tsbuildinfo
 .cache
 build
 dist

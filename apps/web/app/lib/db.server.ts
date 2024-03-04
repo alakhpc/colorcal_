@@ -1,6 +1,4 @@
 import { Database, makeDrizzle } from "@colorcal/db";
-import { eq } from "@colorcal/db/drizzle";
-import { gcalAccountsTable } from "@colorcal/db/tables";
 import { AppLoadContext } from "@remix-run/cloudflare";
 
 export async function getDb(context: AppLoadContext) {
@@ -9,7 +7,7 @@ export async function getDb(context: AppLoadContext) {
 
 export async function getGcalAccount(userId: string, db: Database) {
   const gcalAccount = await db.query.gcalAccountsTable.findFirst({
-    where: eq(gcalAccountsTable.userId, userId),
+    where: (gcalAccountsTable, { eq }) => eq(gcalAccountsTable.userId, userId),
   });
 
   return gcalAccount;

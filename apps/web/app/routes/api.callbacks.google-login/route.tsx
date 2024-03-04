@@ -1,4 +1,3 @@
-import { and, eq } from "@colorcal/db/drizzle";
 import { oauthAccountsTable, usersTable } from "@colorcal/db/tables";
 import { LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { nanoid } from "nanoid";
@@ -6,19 +5,24 @@ import { handleGoogleCallback } from "~/lib/auth.server";
 import { getDb } from "~/lib/db.server";
 import { createSession, getSessionStorage } from "~/lib/sessions.server";
 
-const CALLBACK_PATH = "/callbacks/google-login";
+export const GOOGLE_LOGIN_CALLBACK_PATH = "/api/callbacks/google-login";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const tokens = await handleGoogleCallback({ request, context, callbackPath: CALLBACK_PATH });
+  const tokens = await handleGoogleCallback({
+    request,
+    context,
+    callbackPath: GOOGLE_LOGIN_CALLBACK_PATH,
+  });
 
   const db = await getDb(context);
 
   const existingAccount = await db.query.oauthAccountsTable.findFirst({
     columns: { userId: true },
-    where: and(
-      eq(oauthAccountsTable.providerId, "google"),
-      eq(oauthAccountsTable.providerUserId, tokens.idToken.sub),
-    ),
+    where: (oauthAccountsTable, { and, eq }) =>
+      and(
+        eq(oauthAccountsTable.providerId, "google"),
+        eq(oauthAccountsTable.providerUserId, tokens.idToken.sub),
+      ),
   });
 
   if (existingAccount) {

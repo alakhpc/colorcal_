@@ -2,8 +2,7 @@ import { validateGoogleAuthCode } from "@colorcal/auth/google";
 import { AppLoadContext } from "@remix-run/cloudflare";
 import invariant from "tiny-invariant";
 import { codeVerifierCookie, stateCookie } from "./cookies.server";
-import { env } from "./env.server";
-import { createAbsoluteUrl } from "./url.sever";
+import { createAbsoluteUrl } from "./url.server";
 
 interface HandleGoogleCallbackOptions {
   request: Request;
@@ -28,10 +27,9 @@ export async function handleGoogleCallback(args: HandleGoogleCallbackOptions) {
   invariant(state === storedState, "Invalid state");
 
   const redirectUri = createAbsoluteUrl({ request, path: callbackPath });
-  const { GOOGLE_CLIENT_ID: clientId, GOOGLE_CLIENT_SECRET: clientSecret } = env(context);
   return await validateGoogleAuthCode({
-    clientId,
-    clientSecret,
+    clientId: context.cloudflare.env.GOOGLE_CLIENT_ID,
+    clientSecret: context.cloudflare.env.GOOGLE_CLIENT_SECRET,
     redirectUri,
     code,
     storedCodeVerifier,

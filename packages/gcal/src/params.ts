@@ -1,25 +1,30 @@
-import { MinAccessRole } from "./schema";
+import { EventType } from "./schema";
 
-export type PostParams = {
+export interface PostParams {
   path: string;
-  params?: Record<string, string | number | boolean>;
+  params?: Record<string, string | number | boolean | undefined>;
   body?: unknown;
-};
+}
 
-export type CalendarListParams = {
-  maxResults?: number;
-  minAccessRole?: MinAccessRole;
-  pageToken?: string;
-  showDeleted?: boolean;
-  showHidden?: boolean;
-  syncToken?: string;
-};
+export interface WatchCalendarListParams {
+  id: string;
+  address: string;
+}
 
-export type EventListParams = {
+export interface WatchCalendarListResponse {
+  kind: "api#channel";
+  id: string;
+  resourceId: string;
+  resourceUri: string;
+  token?: string;
+  expiration?: string;
+}
+
+export interface EventListParams {
   calendarId: string;
 
   alwaysIncludeEmail?: boolean;
-  eventTypes?: "default" | "focusTime" | "outOfOffice" | "workingLocation";
+  eventTypes?: EventType;
   iCalUID?: string;
   maxAttendees?: number;
   maxResults?: number;
@@ -36,10 +41,31 @@ export type EventListParams = {
   timeMin?: string;
   timeZone?: string;
   updatedMin?: string;
-};
+}
 
 export interface MoveEventArgs {
   eventId: string;
   calendarId: string;
   destination: string;
+}
+
+export interface WatchEventsArgs {
+  id: string;
+  address: string;
+  calendarId: string;
+  eventTypes?: EventType;
+}
+
+export interface WatchEventsResponse {
+  kind: "api#channel";
+  id: string;
+  resourceId: string;
+  resourceUri: string;
+  token?: string;
+  expiration?: string;
+}
+
+export interface StopChannelArgs {
+  id: string;
+  resourceId: string;
 }

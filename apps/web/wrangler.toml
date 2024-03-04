@@ -1,4 +1,7 @@
 [[d1_databases]]
 binding = "DB"
-database_name = "colorcal"
-database_id = "b9041cb7-e410-4917-9d35-434d8283f723"
+database_name = "colorcal-but-better"
+database_id = "1cab1ca9-d81b-48ab-9c53-d4fd95202510"
+
+[ai]
+binding = "AI"
