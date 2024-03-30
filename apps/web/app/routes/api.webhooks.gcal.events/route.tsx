@@ -114,7 +114,7 @@ async function doAIStuff(args: DoAIStuffArgs) {
   const genAI = new GoogleGenerativeAI(context.cloudflare.env.GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({
     model: "gemini-pro",
-    generationConfig: { temperature: 0, maxOutputTokens: 50 },
+    generationConfig: { temperature: 0.1, maxOutputTokens: 50 },
   });
 
   const prompt = `Classify this task ${JSON.stringify(event.summary)} into these buckets: ${buckets}. Respond only with the bucket name.`;
